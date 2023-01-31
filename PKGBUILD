@@ -1,50 +1,36 @@
 # Maintainer: Ciappi <marco.scopesi@gmail.com>
+# Contributor: Carlos Aznarán <caznaranl@uni.pe>
 pkgname=lfortran
 pkgver=0.18.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Modern interactive LLVM-based Fortran compiler"
 arch=('x86_64')
-url="https://lfortran.org"
-license=('BSD')
-groups=()
-depends=("clang" "zlib" "ncurses" "xeus2")
-makedepends=("llvm11" "cmake")
+url="https://${pkgname}.org"
+license=('custom:BSD-3-clause')
+# depends=("clang" "zlib" "ncurses" "xeus2")
+makedepends=(cmake) # llvm11
 checkdepends=()
 optdepends=()
-provides=()
-conflicts=()
-replaces=()
-backup=()
-options=()
-install=
-changelog=
-source=("https://lfortran.github.io/tarballs/release/"$pkgname-$pkgver.tar.gz)
-sha256sums=('f796b242072d92fae36bcff2e6fddd649e89dccf877feaf99ecfab552e7e1e29')
-noextract=()
-
-prepare() {
-  cd "$pkgname-$pkgver"
-}
+source=(https://${pkgname}.github.io/tarballs/release/${pkgname}-${pkgver}.tar.gz)
+sha512sums=('4d7eb7c8c88155fb9c8538acd0579e9b1d78e676a0429b776220711c6694857a6b73f1c36ac570daefdbda4f016b510cdf0e99b5e5e9dea5fc7f32345f7494f2')
 
 build() {
-  cd "$srcdir/$pkgname-$pkgver"
-  cmake -DWITH_LLVM=yes -DWITH_XEUS=yes -DCMAKE_INSTALL_PREFIX=/usr .
-  make
+  cmake \
+    -S ${pkgname}-${pkgver} \
+    -B build \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -Wno-dev
+  # -DWITH_LLVM=yes \
+  # -DWITH_XEUS=yes \
+  cmake --build build --target all
 }
 
 check() {
-  cd "$srcdir/$pkgname-$pkgver"
-
-  make -k test
+  ctest --verbose --output-on-failure --test-dir build
 }
 
 package() {
-  cd "$srcdir/$pkgname-$pkgver"
-
-  make DESTDIR="$pkgdir/" install
-  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  DESTDIR="${pkgdir}" cmake --build build --target install
+  install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
 }
-
-
-# vim:set ts=2 sw=2 et:
-
